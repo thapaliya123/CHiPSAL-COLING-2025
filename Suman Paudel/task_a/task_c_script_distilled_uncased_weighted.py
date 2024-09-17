@@ -13,7 +13,7 @@ from transformers import (AutoTokenizer,
                           TrainingArguments, 
                           EarlyStoppingCallback
                           )
-from torch.nn import CrossEntropyLoss  # Add this import
+from torch.nn import CrossEntropyLoss
 
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
