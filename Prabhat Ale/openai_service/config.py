@@ -13,6 +13,7 @@ valid_csv_path = os.path.join(base_path, config.get('Paths', 'valid_csv_path'))
 
 api_key = open(os.path.join(base_path, config.get('OpenAI', 'api_key_path')), "r").read().strip('\n')
 model_name = config.get('Model', 'model_name')
+embedding_model_name = config.get('Model', 'embedding_model_name')
 role = config.get('Model', 'role')
 max_tokens = int(config.get('Model', 'max_tokens'))
 temperature = float(config.get('Model', 'temperature'))

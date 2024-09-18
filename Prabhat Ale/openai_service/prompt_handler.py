@@ -87,6 +87,7 @@ Output JSON:
 
         return total_prompt_examples
 
+
     @staticmethod
     def correct_json_template(json_str: str) -> str:
         """
