@@ -13,8 +13,7 @@ from transformers import (AutoTokenizer,
                           TrainingArguments, 
                           EarlyStoppingCallback
                           )
-from torch.nn import CrossEntropyLoss
-import wandb  # Add wandb
+import wandb
 
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -51,28 +50,11 @@ def find_max_token_length(df, tokenizer):
     lengths = [len(tokenizer.encode(text)) for text in df['text'].values]
     return int(np.percentile(lengths, 98))
 
-class WeightedLossTrainer(Trainer):
-    def compute_loss(self, model, inputs, return_outputs=False):
-        # Get the labels from inputs
-        labels = inputs.pop("labels")
-        device = labels.device
-        # Forward pass through the model
-        outputs = model(**inputs)
-
-        # Get the logits (predictions) from the model output
-        logits = outputs.logits
-
-        # Compute the weighted loss
-        class_weights = torch.tensor([2.0615, 2.5864, 7.7958], dtype=torch.float, device=device)
-        weighted_loss_fn = CrossEntropyLoss(weight=class_weights)
-        loss = weighted_loss_fn(logits, labels)
-
-        return (loss, outputs) if return_outputs else loss
-
 def main():
     # Initialize WandB
     api_key = os.getenv("WANDB_API_KEY")
-    wandb.init(project="NLP CHIPSAL", name='model-distillbert_base_uncase')
+    model_name = "xlm-roberta-base"
+    wandb.init(project="NLP CHIPSAL", name=f'model-{model_name}_unweighted')
 
 
     # File IDs and names
@@ -91,7 +73,7 @@ def main():
     train_df, valid_df = load_data(file_names)
 
     # Initialize tokenizer
-    model_name = "distilbert-base-uncased"
+    # model_name = "xlm-roberta-base"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     # Find dynamic max token length
@@ -112,6 +94,7 @@ def main():
 
     # Model training
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=3)
+    os.environ["WANDB_LOG_MODEL"] = "checkpoint"
     os.environ["WANDB_DISABLED"] = "false"  # Enable WandB
 
     # Dynamically set the WandB run name based on model
@@ -120,7 +103,7 @@ def main():
 
     # Training arguments
     training_args = TrainingArguments(
-        output_dir="./distilledbert_results",
+        output_dir="./xlm_roberta_base_unweighted_results",
         num_train_epochs=5,  # Adjusted number of epochs
         per_device_train_batch_size=8,  # Adjusted batch size
         per_device_eval_batch_size=8,
@@ -142,7 +125,7 @@ def main():
     )
 
     # Initialize the Custom Trainer
-    trainer = WeightedLossTrainer(
+    trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
@@ -164,13 +147,13 @@ def main():
 
     # Save metrics to CSV
     metrics_df = pd.DataFrame({'y_true': y_true, 'y_hat': y_hat})
-    metrics_df.to_csv('metrics.csv', index=False)
+    metrics_df.to_csv(f'{model_name}_metrics.csv', index=False)
     logging.info("Metrics saved to metrics.csv")
 
     # Save classification report
     report = classification_report(y_true, y_hat, output_dict=True)
     report_df = pd.DataFrame(report).transpose()
-    report_df.to_csv('classification_report.csv')
+    report_df.to_csv(f'{model_name}_classification_report.csv')
     logging.info("Classification report saved to classification_report.csv")
 
     # Log GPU memory usage
