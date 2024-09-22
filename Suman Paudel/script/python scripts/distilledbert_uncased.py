@@ -171,7 +171,7 @@ def main():
     logging.info("Classification report saved to classification_report.csv")
 
     # Log GPU memory usage
-    logging.info(f"Peak GPU memory usage: {torch.cuda.max_memory_allocated() / (1024 ** 3):.2f} GB")
+    
 
     # End the WandB run
     wandb.finish()
