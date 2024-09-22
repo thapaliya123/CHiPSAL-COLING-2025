@@ -106,9 +106,6 @@ def main():
     train_dataset = tokenize_dataset(train_dataset, tokenizer, 512)
     valid_dataset = tokenize_dataset(valid_dataset, tokenizer, 512)
 
-    # DataLoader
-    train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=64)
-    valid_dataloader = DataLoader(valid_dataset, batch_size=64)
 
     # Model training
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=3)
