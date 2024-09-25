@@ -14,7 +14,7 @@ from transformers import (AutoTokenizer,
                           EarlyStoppingCallback
                           )
 import wandb
-
+from abc import ABC
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
