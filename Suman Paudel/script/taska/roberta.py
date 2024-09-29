@@ -14,9 +14,7 @@ from transformers import (AutoTokenizer,
                           EarlyStoppingCallback
                           )
 from torch.nn import CrossEntropyLoss
-import wandb
-import pickle  # Import pickle for saving/loading data
-import random  # Import random for setting seed
+import wandb  # Add wandb
 
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -31,40 +29,18 @@ def download_file(file_id: str, target_file_name: str):
     logging.info(f"File '{target_file_name}' downloaded successfully.")
 
 def load_data(file_names: str):
-    """Load datasets from CSV files or pickle files."""
-    pkl_file = 'train_valid_data.pkl'
+    """Load datasets from CSV files."""
+    col_names = ['index', 'text', 'label']
+    train_df = pd.read_csv(file_names[0], header=0, names=col_names)
+    valid_df_tweet = pd.read_csv(file_names[1])
+    valid_df_label = pd.read_csv(file_names[2])
     
-    if os.path.exists(pkl_file):
-        # Load from pickle file if it exists
-        with open(pkl_file, 'rb') as f:
-            train_df, valid_df = pickle.load(f)
-        logging.info("Loaded data from pickle file.")
-    else:
-        # Load datasets from CSV files
-        col_names = ['index', 'text', 'label']
-        train_df = pd.read_csv(file_names[0], header=0, names=col_names)
-        valid_df_tweet = pd.read_csv(file_names[1])
-        valid_df_label = pd.read_csv(file_names[2])
-        
-        valid_df = pd.merge(valid_df_tweet, valid_df_label, on='index')
-        valid_df.columns = col_names
-        train_df.drop('index', axis=1, inplace=True)
-        valid_df.drop('index', axis=1, inplace=True)
-        
-        # Save to pickle file for future use
-        with open(pkl_file, 'wb') as f:
-            pickle.dump((train_df, valid_df), f)
-        logging.info("Data saved to pickle file.")
-
+    valid_df = pd.merge(valid_df_tweet, valid_df_label, on='index')
+    valid_df.columns = col_names
+    train_df.drop('index', axis=1, inplace=True)
+    valid_df.drop('index', axis=1, inplace=True)
+    
     return train_df, valid_df
-
-def set_seed(seed: int):
-    """Set the random seed for reproducibility."""
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
 
 def tokenize_dataset(dataset, tokenizer, max_length):
     """Tokenize the dataset with dynamic max length."""
@@ -94,14 +70,11 @@ class WeightedLossTrainer(Trainer):
         return (loss, outputs) if return_outputs else loss
 
 def main():
-    # Set seed for reproducibility
-    seed = 42  # You can choose any integer
-    set_seed(seed)
-
     # Initialize WandB
     api_key = os.getenv("WANDB_API_KEY")
-    model_name = "ai4bharat/IndicBERTv2-MLM-only"`
+    model_name = "xlm-roberta-base"
     wandb.init(project="NLP CHIPSAL", name=f'model-{model_name}')
+
 
     # File IDs and names
     file_ids = [
@@ -149,7 +122,7 @@ def main():
 
     # Training arguments
     training_args = TrainingArguments(
-        output_dir="./ai4bharat-indic-bertv2",
+        output_dir="./xlm_roberta_base_results",
         num_train_epochs=5,  # Adjusted number of epochs
         per_device_train_batch_size=8,  # Adjusted batch size
         per_device_eval_batch_size=8,
@@ -193,13 +166,13 @@ def main():
 
     # Save metrics to CSV
     metrics_df = pd.DataFrame({'y_true': y_true, 'y_hat': y_hat})
-    metrics_df.to_csv(f'ai4bharat-indic-bertv2_metrics.csv', index=False)
+    metrics_df.to_csv(f'{model_name}_metrics.csv', index=False)
     logging.info("Metrics saved to metrics.csv")
 
     # Save classification report
     report = classification_report(y_true, y_hat, output_dict=True)
     report_df = pd.DataFrame(report).transpose()
-    report_df.to_csv(f'ai4bharat-indic-bertv2_classification_report.csv')
+    report_df.to_csv(f'{model_name}_classification_report.csv')
     logging.info("Classification report saved to classification_report.csv")
 
     # Log GPU memory usage
