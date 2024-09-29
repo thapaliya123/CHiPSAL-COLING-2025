@@ -27,13 +27,14 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         ids = torch.squeeze(ids).to(device, dtype=torch.long)
         token_type_ids = torch.squeeze(token_type_ids).to(device, dtype=torch.long)
         mask = torch.squeeze(mask).to(device, dtype=torch.long)
-        targets = targets.to(device, dtype=torch.float)
+        targets = targets.to(device, dtype=torch.long)
 
         optimizer.zero_grad()
 
         outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
 
         loss = loss_fn(outputs, targets)
+        
         total_train_loss += loss.item()
         
         loss.backward()
@@ -60,17 +61,20 @@ def eval_fn(data_loader, model, device):
             ids = torch.squeeze(ids).to(device, dtype=torch.long)
             token_type_ids = torch.squeeze(token_type_ids).to(device, dtype=torch.long)
             mask = torch.squeeze(mask).to(device, dtype=torch.long)
-            targets = targets.to(device, dtype=torch.float)
+            targets = targets.to(device, dtype=torch.long)
 
 
             outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
             loss = loss_fn(outputs, targets)
+            
             total_valid_loss += loss.item()
+            
             fin_targets.extend(targets.cpu().detach().numpy().tolist())
             m = nn.Softmax(dim=1)
             fin_outputs.extend(m(outputs).cpu().detach().numpy().tolist())
     avg_valid_loss = total_valid_loss / len(data_loader)
     return fin_outputs, fin_targets, avg_valid_loss
+
 
 
 

@@ -17,6 +17,8 @@ from metrics.metrics import Metrics
 from utils.wandb_utils import WandbLogger
 from enums import wandb_enums
 
+
+
 WANDB_RUN_NAME = f"{config.HF_MODEL_PATH.split('/')[-1]}+TASK: {config.TASK_NAME} {str(datetime.now())}"
 CONFIG_DICT = {
                 wandb_enums.WandbEnum.WANDB_PROJECT_NAME.value: config.WANDB_PROJECT_NAME,

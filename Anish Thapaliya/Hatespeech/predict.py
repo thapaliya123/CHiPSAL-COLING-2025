@@ -80,7 +80,7 @@ def process_csv_get_predictions(test_data_path: str,
     
     
     df_test = read_csv_sort_by_index(test_data_path)
-    breakpoint()
+    
     index: list = df_test['index'].to_list()
 
     test_dataset = dataset.HFDataset(
