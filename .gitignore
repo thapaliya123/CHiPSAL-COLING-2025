@@ -8,3 +8,6 @@ Anish Thapaliya/Hatespeech/dummy.py
 Anish Thapaliya/Hatespeech/enums/__pycache__
 Anish Thapaliya/Hatespeech/wandb
 */__pycache__/*
+openai_api_key.txt
+__pycache__/
+*.pyc
