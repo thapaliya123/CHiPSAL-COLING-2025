@@ -11,6 +11,8 @@ output_json_file_path = os.path.join(base_path, config.get('Paths', 'output_json
 train_csv_path = os.path.join(base_path, config.get('Paths', 'train_csv_path'))
 valid_csv_path = os.path.join(base_path, config.get('Paths', 'valid_csv_path'))
 raw_train_csv_path = os.path.join(base_path, config.get('Paths', 'raw_train_csv_path'))
+raw_valid_csv_path = os.path.join(base_path, config.get('Paths', 'raw_valid_csv_path'))
+raw_test_csv_path = os.path.join(base_path, config.get('Paths', 'raw_test_csv_path'))
 synthetic_data_path = os.path.join(base_path, config.get('Paths', 'synthetic_data_path'))
 
 
