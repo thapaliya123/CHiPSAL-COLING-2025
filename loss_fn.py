@@ -34,9 +34,9 @@ class FocalLoss(nn.Module):
     def get_aggregated_loss(self, loss):
         if self.reduction == 'mean':
             return torch.mean(loss)
-        elif self.reduction == 'sum':
+        if self.reduction == 'sum':
             return torch.sum(loss)
-        elif self.reduction == 'none':
+        if self.reduction == 'none':
             return loss
         
     def forward(self, inputs, targets):
