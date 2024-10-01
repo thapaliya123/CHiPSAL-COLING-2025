@@ -18,8 +18,8 @@ HF_MODEL_PATH = "rahular/varta-bert"
 MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
 # file path
-TRAINING_FILE = "data/taskb/train.csv"
-VALID_FILE = "data/taskb/valid.csv"
+TRAINING_FILE = "data/taskc/train.csv"
+VALID_FILE = "data/taskc/valid.csv"
 
 # tokenizer
 TOKENIZER = AutoTokenizer.from_pretrained(HF_MODEL_PATH)
