@@ -7,14 +7,14 @@ DEVICE = "cuda"
 MAX_LEN = 300
 TRAIN_BATCH_SIZE = 8
 VALID_BATCH_SIZE = 8
-EPOCHS = 1
+EPOCHS = 10
 LEARNING_RATE= 2e-5
 NUM_LABELS = 3
 METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
 
 # models
-# HF_MODEL_PATH = "google/muril-large-cased"
-HF_MODEL_PATH = "rahular/varta-bert"
+HF_MODEL_PATH = "google/muril-large-cased"
+# HF_MODEL_PATH = "rahular/varta-bert"
 MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
 # file path
@@ -25,7 +25,7 @@ VALID_FILE = "data/taskc/valid.csv"
 TOKENIZER = AutoTokenizer.from_pretrained(HF_MODEL_PATH)
 
 # For Reproducibility and data preprocessing and augmentation
-LOSS_FUNCTION = loss_enums.LossFuncEnum.CATEGORICAL_CROSSENTROPY.value
+LOSS_FUNCTION = loss_enums.LossFuncEnum.WEIGHTED_CROSSENTROPY.value
 DATA_AUGMENTATION = False 
 PREPROCESSING = False
 
