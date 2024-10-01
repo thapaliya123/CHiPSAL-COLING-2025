@@ -1,0 +1,42 @@
+{
+  "os":  "Linux-6.1.100-1-MANJARO-x86_64-with-glibc2.39",
+  "python":  "3.12.4",
+  "startedAt":  "2024-09-30T05:19:49.090800Z",
+  "program":  "/home/suman/CHIPSAL-COLING-2025/Anish Thapaliya/Hatespeech/train.py",
+  "codePath":  "Anish Thapaliya/Hatespeech/train.py",
+  "git":  {
+    "remote":  "git@github.com:thapaliya123/CHIPSAL-COLING-2025.git",
+    "commit":  "a83a040ba10df1af44fc4eb24ed14e35e0f41136"
+  },
+  "email":  "anish.805522@sms.tu.edu.np",
+  "root":  "/home/suman/CHIPSAL-COLING-2025/Anish Thapaliya/Hatespeech",
+  "host":  "ml",
+  "username":  "suman",
+  "executable":  "/home/suman/CHIPSAL-COLING-2025/venv/bin/python",
+  "codePathLocal":  "train.py",
+  "cpu_count":  12,
+  "cpu_count_logical":  24,
+  "gpu":  "[]",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "105089261568",
+      "used":  "86291603456"
+    }
+  },
+  "memory":  {
+    "total":  "33553440768"
+  },
+  "cpu":  {
+    "count":  12,
+    "countLogical":  24
+  },
+  "gpu_nvidia":  [
+    {
+      "memoryTotal":  "25769803776",
+      "cudaCores":  10496,
+      "architecture":  "Ampere"
+    }
+  ],
+  "cudaVersion":  "12.4"
+}
