@@ -1,8 +1,0 @@
-transformers
-torch
-datasets
-gdown
-seaborn
-matplotlib
-pandas
-accelerate
