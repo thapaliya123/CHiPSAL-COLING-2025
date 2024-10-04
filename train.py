@@ -137,16 +137,17 @@ def run():
         outputs = np.argmax(np.array(outputs), axis=1)
         
         metric_result = custom_metric.get_metrics_fn()(targets, outputs)
-        print(f"\nMETRIC (Validation Split): {config.METRIC_NAME} --> {metric_result}")
-        
+        print(f"\nTRAIN LOSS: {train_loss}")
+        print(f"VALIDATION LOSS: {valid_loss}")
+        print(f"METRIC (Validation Split): {config.METRIC_NAME} --> {metric_result}")
         if metric_result > best_metric_result:
-            print(f"Best Metric: {metric_result}")
+            print(f"\nBest Metric: {metric_result}")
             print("### SAVING MODEL ###")
             best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{config.LOSS_FUNCTION}-{metric_result}.bin"
             torch.save(model.state_dict(), best_model_path)
             best_metric_result = metric_result
 
-        print("\n### WANDB LOGGING METRICS ###")
+        print("### WANDB LOGGING METRICS ###")
         wandb_logger.log_metrics({"train_loss": train_loss,
                                   "valid_loss": valid_loss,
                                   f"{config.METRIC_NAME}": metric_result
