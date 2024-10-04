@@ -1,3 +1,4 @@
+import argparse
 from datetime import datetime
 from typing import List
 import config
@@ -46,6 +47,12 @@ def seed_everything(seed: int=42):
     torch.backends.cudnn.deterministic=True
     torch.backends.cudnn.benchmark=True
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gpu-number', type=int, default=0)
+    args, _ = parser.parse_known_args()
+    return args
+
 def seed_worker(worker_id):
     """
     seed each worker in DataLoader to ensure reproducibility.
@@ -55,8 +62,8 @@ def seed_worker(worker_id):
     np.random.seed(worker_seed)
     random.seed(worker_seed)
 
-def get_device():
-    device:torch.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+def get_device(cuda_number):
+    device:torch.device = torch.device(f'cuda:{cuda_number}') if torch.cuda.is_available() else torch.device('cpu')
     return device
 
 def get_optimizer_parameters(named_parameters: list):
@@ -79,7 +86,7 @@ def get_optimizer_parameters(named_parameters: list):
 
     return optimizer_parameters
 
-def run():
+def run(cuda_number):
     # seed everything for reproducibility
     seed_everything(config.SEED)
 
@@ -109,7 +116,7 @@ def run():
         valid_dataset, batch_size=config.VALID_BATCH_SIZE, num_workers=1
     )
     
-    device = get_device()
+    device = get_device(cuda_number)
 
     model = HFAutoModel()
     model.to(device)
@@ -157,4 +164,6 @@ def run():
     wandb_logger.finish()
 
 if __name__ == "__main__":
-    run()
+    args = parse_args()
+    cuda_number = args.gpu_number
+    run(cuda_number)

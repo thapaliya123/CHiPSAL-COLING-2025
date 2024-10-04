@@ -5,6 +5,13 @@
 - CUDA out of Memory
     - `get_process_id:` nvidia-smi
     - `kill_process_id:` kill -9 <PID>
+- Training Command:
+    - python train.py
+
+- Training command with specific GPU
+    - python train.py --gpu-number <available-gpu-number>
+    - python train.py --gpu-number 0
+    - python train.py --gpu-number 1
 
 
 
