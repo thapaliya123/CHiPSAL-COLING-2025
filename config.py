@@ -25,7 +25,7 @@ VALID_FILE = "data/taskc/valid.csv"
 TOKENIZER = AutoTokenizer.from_pretrained(HF_MODEL_PATH)
 
 # For Reproducibility and data preprocessing and augmentation
-LOSS_FUNCTION = loss_enums.LossFuncEnum.WEIGHTED_CROSSENTROPY.value
+LOSS_FUNCTION = loss_enums.LossFuncEnum.CATEGORICAL_CROSSENTROPY.value
 DATA_AUGMENTATION = False 
 PREPROCESSING = False
 

@@ -16,6 +16,7 @@ from transformers import AdamW
 from transformers import get_linear_schedule_with_warmup
 from metrics.metrics import Metrics
 from utils.wandb_utils import WandbLogger
+from utils.loss_fn_utils import get_loss_function_weights
 from enums import wandb_enums
 
 
@@ -119,9 +120,8 @@ def run(cuda_number):
     device = get_device(cuda_number)
 
     model = HFAutoModel()
+    model.print_trainable_layers()
     model.to(device)
-
-    print(model)
 
     param_optimizer = list(model.named_parameters())
     optimizer_parameters: List[dict] = get_optimizer_parameters(param_optimizer)
@@ -130,12 +130,14 @@ def run(cuda_number):
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=0, num_training_steps=num_train_steps
     )
-
+    loss_fn_weights = get_loss_function_weights(df_train.label.values, device)
+    
     best_metric_result = 0
     for epoch in range(config.EPOCHS):
         print(f"\n##### EPOCH {epoch+1} #####")
         
-        train_loss: float = engine.train_fn(train_data_loader, model, optimizer, device, scheduler)
+        train_loss: float = engine.train_fn(train_data_loader, model, optimizer, device, scheduler,
+                                            loss_fn_weights)
         
         outputs: List[List[float]]
         targets: List[float]

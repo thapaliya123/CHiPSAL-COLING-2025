@@ -1,7 +1,21 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from sklearn.utils.class_weight import compute_class_weight
+import config
 from enums.loss_enums import LossFuncEnum
+
+def get_loss_function_weights(y_train, device):
+    """
+    Returns weights to assign to categorical crossentropy loss function to handle class imbalance problems.
+    """
+    if config.LOSS_FUNCTION == LossFuncEnum.WEIGHTED_CROSSENTROPY.value:
+        weights = compute_class_weight(class_weight="balanced", classes=np.unique(y_train),
+                                       y=y_train)
+        return torch.tensor(weights, dtype=torch.float32).to(device)
+
+    return None
 
 
 class LossFunction:
