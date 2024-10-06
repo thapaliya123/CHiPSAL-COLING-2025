@@ -13,12 +13,13 @@ NUM_LABELS = 3
 METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
 
 # models
-HF_MODEL_PATH = "google/muril-large-cased"
+HF_MODEL_PATH = "google/muril-base-cased"
 # HF_MODEL_PATH = "rahular/varta-bert"
 MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
 # file path
-TRAINING_FILE = "data/taskc/train.csv"
+# TRAINING_FILE = "data/taskc/train.csv"
+TRAINING_FILE = "data/taskc/train_with_train_synthetic_combination.csv"
 VALID_FILE = "data/taskc/valid.csv"
 
 # tokenizer
