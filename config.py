@@ -14,8 +14,8 @@ METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
 LOSS_TYPE = 'wt'
 
 # models
-# HF_MODEL_PATH = "google/muril-large-cased"
-HF_MODEL_PATH = "rahular/varta-bert"
+HF_MODEL_PATH = "google/muril-large-cased"
+# HF_MODEL_PATH = "rahular/varta-bert"
 MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
 # file path
