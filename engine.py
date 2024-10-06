@@ -1,13 +1,21 @@
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+import config
 
-def loss_fn(outputs, targets):
+
+def loss_fn(outputs, targets, loss_type):
     """
     This criteron computes the cross entropy loss between input logits and target.
     """
-    loss = nn.CrossEntropyLoss()
-    return loss(outputs, targets.long())
+    if loss_type == 'wt':
+        loss = nn.CrossEntropyLoss()
+        return loss(outputs, targets.long())
+    
+    if loss_type == 'ce':
+        loss = nn.CrossEntropyLoss(weight=torch.tensor(class_weights))
+        return loss(outputs, targets.long())
+        
 
 def train_fn(data_loader, model, optimizer, device, scheduler):
     model.train()
@@ -33,7 +41,7 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
 
         outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
 
-        loss = loss_fn(outputs, targets)
+        loss = loss_fn(outputs, targets, config.LOSS_TYPE)
         
         total_train_loss += loss.item()
         
@@ -65,7 +73,7 @@ def eval_fn(data_loader, model, device):
 
 
             outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
-            loss = loss_fn(outputs, targets)
+            loss = loss_fn(outputs, targets, config.LOSS_TYPE)
             
             total_valid_loss += loss.item()
             
