@@ -10,7 +10,6 @@ def loss_fn(outputs, targets, loss_function_type):
     """
     
     loss = LossFunction.get_loss_func(loss_function_type)
-    
     return loss(outputs, targets.long())
 
 def train_fn(data_loader, model, optimizer, device, scheduler):
