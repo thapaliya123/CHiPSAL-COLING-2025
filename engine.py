@@ -8,14 +8,10 @@ def loss_fn(outputs, targets, loss_type):
     """
     This criteron computes the cross entropy loss between input logits and target.
     """
-    if loss_type == 'wt':
-        loss = nn.CrossEntropyLoss()
-        return loss(outputs, targets.long())
     
-    if loss_type == 'ce':
-        loss = nn.CrossEntropyLoss(weight=torch.tensor(class_weights))
-        return loss(outputs, targets.long())
-        
+    loss = nn.CrossEntropyLoss()
+    return loss(outputs, targets.long())
+
 
 def train_fn(data_loader, model, optimizer, device, scheduler):
     model.train()
