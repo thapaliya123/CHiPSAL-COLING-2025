@@ -120,7 +120,7 @@ def run(cuda_number):
     device = get_device(cuda_number)
 
     model = HFAutoModel()
-    model.print_trainable_layers()
+    # model.print_trainable_layers()
     model.to(device)
 
     param_optimizer = list(model.named_parameters())
