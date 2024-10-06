@@ -5,5 +5,7 @@ class CSVPathOption(Enum):
     VALID = 'valid'
 
 class SheetNames(Enum):
-    NEPALI = 'nepali'
-    HINDI = 'hindi'
+    NEPALI_TRAIN = 'train_nepali'
+    HINDI_TRAIN = 'train_hindi'
+    NEPALI_VALID = 'valid_nepali'
+    HINDI_VALID = 'valid_hindi'
