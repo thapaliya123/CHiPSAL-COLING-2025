@@ -85,6 +85,8 @@ def run():
 
     df_train = pd.read_csv(config.TRAINING_FILE)
     df_valid = pd.read_csv(config.VALID_FILE)
+    
+    df_train = df_train.sample(n=2214, random_state=config.SEED)
 
     # TODO: ADD assert for df_train and df_valid columns
 

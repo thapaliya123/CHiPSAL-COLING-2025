@@ -2,12 +2,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from enums.loss_enums import LossFuncEnum
+import config
+import pandas as pd
+import numpy as np
 
 
 class LossFunction:
     
     device = 'cuda'
-    weight = torch.tensor([0.8358099489795918, 0.9501903208265362,0.9534739905420153, 1.0294972505891595, 1.3680062630480168]).to(device)
+    weight = torch.tensor([0.56587325, 4.29516712]).to(device)
     
     def get_loss_func(loss_func: str):
         

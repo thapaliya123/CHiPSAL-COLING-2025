@@ -1,13 +1,16 @@
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from utils.loss_fn import LossFunction
+import config
 
-def loss_fn(outputs, targets, device):
+def loss_fn(outputs, targets, loss_function_type):
     """
     This criteron computes the cross entropy loss between input logits and target.
     """
-    weight = torch.tensor([0.8358099489795918, 0.9501903208265362,0.9534739905420153, 1.0294972505891595, 1.3680062630480168]).to(device)
-    loss = nn.CrossEntropyLoss(weight)
+    
+    loss = LossFunction.get_loss_func(loss_function_type)
+    
     return loss(outputs, targets.long())
 
 def train_fn(data_loader, model, optimizer, device, scheduler):
@@ -33,8 +36,7 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         optimizer.zero_grad()
 
         outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
-
-        loss = loss_fn(outputs, targets, device)
+        loss = loss_fn(outputs, targets, config.LOSS_FUNCTION)
         
         total_train_loss += loss.item()
         
@@ -66,7 +68,7 @@ def eval_fn(data_loader, model, device):
 
 
             outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
-            loss = loss_fn(outputs, targets, device)
+            loss = loss_fn(outputs, targets, config.LOSS_FUNCTION)
             
             total_valid_loss += loss.item()
             
