@@ -11,6 +11,7 @@ EPOCHS = 10
 LEARNING_RATE= 2e-5
 NUM_LABELS = 3
 METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
+LOSS_TYPE = 'wt'
 
 # models
 HF_MODEL_PATH = "google/muril-large-cased"
