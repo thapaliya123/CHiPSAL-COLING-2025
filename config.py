@@ -13,7 +13,7 @@ NUM_LABELS = 3
 METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
 
 # models
-HF_MODEL_PATH = "google/muril-base-cased"
+HF_MODEL_PATH = "google/muril-large-cased"
 # HF_MODEL_PATH = "rahular/varta-bert"
 MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
