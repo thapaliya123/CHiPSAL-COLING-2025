@@ -79,17 +79,21 @@ def get_optimizer_parameters(named_parameters: list):
 
     return optimizer_parameters
 
+
+    
+
 def run():
     # seed everything for reproducibility
     seed_everything(config.SEED)
+    from sklearn.utils import resample
 
     
     df_train = pd.read_csv(config.TRAINING_FILE)
     df_valid = pd.read_csv(config.VALID_FILE)
-    
-    # df_train = df_train.sample(n=2214, random_state=config.SEED)
 
-    # TODO: ADD assert for df_train and df_valid columns
+
+    
+    # # TODO: ADD assert for df_train and df_valid columns
 
     train_dataset = dataset.HFDataset(
         tweet=df_train.tweet.values,
@@ -145,7 +149,7 @@ def run():
         if metric_result > best_metric_result:
             print(f"Best Metric: {metric_result}")
             print("### SAVING MODEL ###")
-            best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{metric_result}.bin"
+            best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{metric_result}-undersampling.bin"
             torch.save(model.state_dict(), best_model_path)
             best_metric_result = metric_result
 
