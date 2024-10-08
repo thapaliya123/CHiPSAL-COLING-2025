@@ -1,13 +1,23 @@
+import config
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from enums.loss_enums import LossFuncEnum
+from utils.loss_fn_utils import FocalLoss
+# from train import get_loss_function_weights
+
+focal_loss = FocalLoss()
 
 def loss_fn(outputs, targets, weights=None):
     """
     This criteron computes the cross entropy loss between input logits and target.
     """
-    loss = nn.CrossEntropyLoss(weight=weights)
-    return loss(outputs, targets.long())
+    if config.LOSS_FUNCTION in [LossFuncEnum.CATEGORICAL_CROSSENTROPY.value, LossFuncEnum.WEIGHTED_CROSSENTROPY.value]:
+        loss = nn.CrossEntropyLoss(weight=weights)
+        return loss(outputs, targets.long())
+    else:
+        return focal_loss(outputs, targets, alpha=weights)
+
 
 def train_fn(data_loader, model, optimizer, device, scheduler, loss_fn_weights=None):
     model.train()

@@ -12,7 +12,7 @@ from model import HFAutoModel
 import dataset
 
 
-DEVICE = get_device()
+DEVICE = None
 MODEL = None
 
 def parse_args():
@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument('--test-data-path', type=str, required=True)
     parser.add_argument('--submission-file-path', type=str, default="submission.csv")
     parser.add_argument('--test-batch-size', type=int, default=4)
+    parser.add_argument('--gpu-number', type=int, default=0)
 
 
     args, _ = parser.parse_known_args()
@@ -111,7 +112,8 @@ if __name__ == "__main__":
     TEST_DATA_PATH = args.test_data_path
     SUBMISSION_FILE_PATH = args.submission_file_path
     TEST_BATCH_SIZE = args.test_batch_size
-
+    GPU_NUMBER = args.gpu_number
+    DEVICE = get_device(GPU_NUMBER)
     load_model_weights(MODEL_PATH)
     print_model_layers(MODEL)
     MODEL.to(DEVICE)
