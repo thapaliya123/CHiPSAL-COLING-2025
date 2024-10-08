@@ -58,10 +58,16 @@ python3 predict.py --model-path ./models/muril-base-cased-f1_score-0.67894608538
 ## Ensemble Learning
 - **Soft Voting:**
 ```
+python3 ensemble.py --model-dir <models-dir>   --soft-vote
+
+Example:
 python3 ensemble.py --model-dir ./models/ensemble_models   --soft-vote
 ```
 
 - **Hard Voting:**
 ```
+python3 ensemble.py --model-dir <models-dir>
+
+Example: 
 python3 ensemble.py --model-dir ./models/ensemble_models 
 ```
