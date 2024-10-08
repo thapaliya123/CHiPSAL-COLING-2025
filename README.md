@@ -55,3 +55,13 @@ python3 predict.py --model-path <model-path-here> --test-data-path <test-path-he
 python3 predict.py --model-path ./models/muril-base-cased-f1_score-0.6789460853867482.bin --test-data-path ./data/taskc/test.csv --submission-file-path ./submissions/submission.json
 ```
 
+## Ensemble Learning
+- **Soft Voting:**
+```
+python3 ensemble.py --model-dir ./models/ensemble_models   --soft-vote
+```
+
+- **Hard Voting:**
+```
+python3 ensemble.py --model-dir ./models/ensemble_models 
+```
