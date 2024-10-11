@@ -35,7 +35,7 @@ def load_model_weights(model_path, model = None):
     if not model:
         result = MODEL.load_state_dict(torch.load(model_path, map_location=torch.device(DEVICE)))
     else:
-        result = model.load_state_dict(torch.load(model_path, map_location=torch.device(DEVICE)))
+        result = model.load_state_dict(torch.load(model_path))
         return model
     
     if len(result.missing_keys) > 0 or len(result.unexpected_keys) > 0:
@@ -110,7 +110,8 @@ def process_csv_get_predictions(model_path: str,
                                 test_data_path: str,
                                 submission_file_path: str,
                                 ensemble: str,
-                                test_batch_size: int):
+                                test_batch_size: int,
+                                model = None):
     
     
     df_test = read_csv_sort_by_index(test_data_path)
@@ -127,7 +128,10 @@ def process_csv_get_predictions(model_path: str,
     )
 
     if ensemble == EnsembleEnum.NO_ENSEMBLE.value:
-        outputs: List[List[float]] = get_predictions(test_data_loader, MODEL)
+        if not model:
+            outputs: List[List[float]] = get_predictions(test_data_loader, MODEL)
+        else:
+            outputs: List[List[float]] = get_predictions(test_data_loader, model)
         outputs = np.argmax(np.array(outputs), axis=1)
     else:
         outputs = get_ensembled_predictions(model_path, test_data_loader, ensemble)
