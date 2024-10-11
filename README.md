@@ -48,11 +48,17 @@ zip submission.zip submission.json
 
 ## Generate Prediction
 ```
-## Command
+##1. Command (Without Ensemble Learning)
 python3 predict.py --model-path <model-path-here> --test-data-path <test-path-here> --submission-file-path <submission-csv-file-path>
 
-## Example
+### Example
 python3 predict.py --model-path ./models/muril-base-cased-f1_score-0.6789460853867482.bin --test-data-path ./data/taskc/test.csv --submission-file-path ./submissions/submission.json
+
+##2. Command (With Ensemble Learning)
+python3 predict.py --model-path <should-be-model-directory>  --test-data-path ./data/taskc/test.csv  --submission-file-path ./submissions/test.json --ensemble soft_vote
+
+### Example
+python3 predict.py --model-path ./models/ensemble_models --test-data-path ./data/taskc/test.csv  --submission-file-path ./submissions/test.json --ensemble soft_vote
 ```
 
 ## Ensemble Learning
