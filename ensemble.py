@@ -89,6 +89,7 @@ def main(model_dir, test_data_path, test_batch_size, soft_vote=True):
             # breakpoint()    
     final_prediction = np.mean(np.array(predictions), axis=0)
     df_ensemble_probs = pd.DataFrame(final_prediction) 
+    
     if soft_vote:
         print("###SOFT VOTING###")
         ensemble_pred = np.argmax(final_prediction, axis=1)
