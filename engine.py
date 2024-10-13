@@ -1,18 +1,25 @@
+import config
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from utils.loss_fn import LossFunction
-import config
+from enums.loss_enums import LossFuncEnum
+from utils.loss_fn_utils import FocalLoss
+# from train import get_loss_function_weights
 
-def loss_fn(outputs, targets, loss_function_type):
+focal_loss = FocalLoss()
+
+def loss_fn(outputs, targets, weights=None):
     """
     This criteron computes the cross entropy loss between input logits and target.
     """
-    
-    loss = LossFunction.get_loss_func(loss_function_type)
-    return loss(outputs, targets.long())
+    if config.LOSS_FUNCTION in [LossFuncEnum.CATEGORICAL_CROSSENTROPY.value, LossFuncEnum.WEIGHTED_CROSSENTROPY.value]:
+        loss = nn.CrossEntropyLoss(weight=weights)
+        return loss(outputs, targets.long())
+    else:
+        return focal_loss(outputs, targets, alpha=weights)
 
-def train_fn(data_loader, model, optimizer, device, scheduler):
+
+def train_fn(data_loader, model, optimizer, device, scheduler, loss_fn_weights=None):
     model.train()
     total_train_loss = 0
     print("### Training Started ###")
@@ -35,7 +42,8 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         optimizer.zero_grad()
 
         outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
-        loss = loss_fn(outputs, targets, config.LOSS_FUNCTION)
+
+        loss = loss_fn(outputs, targets, loss_fn_weights)
         
         total_train_loss += loss.item()
         
@@ -67,7 +75,7 @@ def eval_fn(data_loader, model, device):
 
 
             outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
-            loss = loss_fn(outputs, targets, config.LOSS_FUNCTION)
+            loss = loss_fn(outputs, targets)
             
             total_valid_loss += loss.item()
             
@@ -76,7 +84,4 @@ def eval_fn(data_loader, model, device):
             fin_outputs.extend(m(outputs).cpu().detach().numpy().tolist())
     avg_valid_loss = total_valid_loss / len(data_loader)
     return fin_outputs, fin_targets, avg_valid_loss
-
-
-
 

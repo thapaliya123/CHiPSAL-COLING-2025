@@ -10,7 +10,7 @@ import numpy as np
 class LossFunction:
     
     device = 'cuda'
-    weight = torch.tensor([0.56587325, 4.29516712]).to(device)
+    weight = torch.tensor([0.63175434, 2.39747064]).to(device)
     
     def get_loss_func(loss_func: str):
         

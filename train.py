@@ -1,3 +1,4 @@
+import argparse
 from datetime import datetime
 from typing import List
 import config
@@ -15,6 +16,7 @@ from transformers import AdamW
 from transformers import get_linear_schedule_with_warmup
 from metrics.metrics import Metrics
 from utils.wandb_utils import WandbLogger
+from utils.loss_fn_utils import get_loss_function_weights
 from enums import wandb_enums
 
 
@@ -46,6 +48,12 @@ def seed_everything(seed: int=42):
     torch.backends.cudnn.deterministic=True
     torch.backends.cudnn.benchmark=True
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gpu-number', type=int, default=0)
+    args, _ = parser.parse_known_args()
+    return args
+
 def seed_worker(worker_id):
     """
     seed each worker in DataLoader to ensure reproducibility.
@@ -55,8 +63,8 @@ def seed_worker(worker_id):
     np.random.seed(worker_seed)
     random.seed(worker_seed)
 
-def get_device():
-    device:torch.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+def get_device(cuda_number):
+    device:torch.device = torch.device(f'cuda:{cuda_number}') if torch.cuda.is_available() else torch.device('cpu')
     return device
 
 def get_optimizer_parameters(named_parameters: list):
@@ -79,21 +87,20 @@ def get_optimizer_parameters(named_parameters: list):
 
     return optimizer_parameters
 
-
-    
-
-def run():
+def run(cuda_number):
     # seed everything for reproducibility
     seed_everything(config.SEED)
-    from sklearn.utils import resample
 
-    
     df_train = pd.read_csv(config.TRAINING_FILE)
     df_valid = pd.read_csv(config.VALID_FILE)
 
-
+    class_0 = df_train[df_train.label == 0]
+    class_1 = df_train[df_train['label'] == 1]
     
-    # # TODO: ADD assert for df_train and df_valid columns
+    class_0 = class_0.sample(n=int(len(class_1) + 100), random_state=config.SEED).sample(frac=.8, random_state=config.SEED)
+    df_train = pd.concat([class_0, class_1], ignore_index=True).sample(frac=.80, random_state=config.SEED)
+
+    # TODO: ADD assert for df_train and df_valid columns
 
     train_dataset = dataset.HFDataset(
         tweet=df_train.tweet.values,
@@ -116,12 +123,11 @@ def run():
         valid_dataset, batch_size=config.VALID_BATCH_SIZE, num_workers=1
     )
     
-    device = get_device()
+    device = get_device(cuda_number)
 
     model = HFAutoModel()
+    # model.print_trainable_layers()
     model.to(device)
-
-    print(model)
 
     param_optimizer = list(model.named_parameters())
     optimizer_parameters: List[dict] = get_optimizer_parameters(param_optimizer)
@@ -130,12 +136,14 @@ def run():
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=0, num_training_steps=num_train_steps
     )
-
+    loss_fn_weights = get_loss_function_weights(df_train.label.values, device)
+    
     best_metric_result = 0
     for epoch in range(config.EPOCHS):
         print(f"\n##### EPOCH {epoch+1} #####")
         
-        train_loss: float = engine.train_fn(train_data_loader, model, optimizer, device, scheduler)
+        train_loss: float = engine.train_fn(train_data_loader, model, optimizer, device, scheduler,
+                                            loss_fn_weights)
         
         outputs: List[List[float]]
         targets: List[float]
@@ -144,16 +152,17 @@ def run():
         outputs = np.argmax(np.array(outputs), axis=1)
         
         metric_result = custom_metric.get_metrics_fn()(targets, outputs)
-        print(f"\nMETRIC (Validation Split): {config.METRIC_NAME} --> {metric_result}")
-        
+        print(f"\nTRAIN LOSS: {train_loss}")
+        print(f"VALIDATION LOSS: {valid_loss}")
+        print(f"METRIC (Validation Split): {config.METRIC_NAME} --> {metric_result}")
         if metric_result > best_metric_result:
-            print(f"Best Metric: {metric_result}")
+            print(f"\nBest Metric: {metric_result}")
             print("### SAVING MODEL ###")
-            best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{metric_result}-undersampling.bin"
+            best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{config.LOSS_FUNCTION}-{metric_result}.bin"
             torch.save(model.state_dict(), best_model_path)
             best_metric_result = metric_result
 
-        print("\n### WANDB LOGGING METRICS ###")
+        print("### WANDB LOGGING METRICS ###")
         wandb_logger.log_metrics({"train_loss": train_loss,
                                   "valid_loss": valid_loss,
                                   f"{config.METRIC_NAME}": metric_result
@@ -163,4 +172,6 @@ def run():
     wandb_logger.finish()
 
 if __name__ == "__main__":
-    run()
+    args = parse_args()
+    cuda_number = args.gpu_number
+    run(cuda_number)
