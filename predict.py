@@ -50,7 +50,7 @@ def print_model_layers(model):
 
 def read_csv_sort_by_index(csv_file_path: str):
     df_test = pd.read_csv(csv_file_path)
-    assert list(df_test.columns) == ["index", "tweet"], "Invalid CSV file for predictions"
+    assert list(df_test.columns) == ["index", "tweet"], "Invalid columns file for predictions"
     df_test.sort_values(by='index', ascending=True, inplace=True)
     return df_test
 

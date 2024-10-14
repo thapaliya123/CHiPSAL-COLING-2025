@@ -26,15 +26,15 @@ class DataIngestion:
         df.to_csv(save_path, index=False)
 
 if __name__ == "__main__":
-    FILE_ID = ['166k7N9KV6jEDvvAr9iLTwrWyfdEcAs5p', '1-2TjS6xPfjWj9YaJGSf-JXXXfNz-2pNT', '1-1k1yHOGP7Wij1mUG2iKaSTN8i1WUgPz']
-    SAVE_FILENAME = ["data/taskc/train.csv", "data/taskc/val_tweet.csv", "data/taskc/val_label.csv"]
+    FILE_ID = ['1YAo40VKJlF2dD1xlPsWDZ4uqANSh1lrx', '1wmivix0utKHmq6d6ICvpRBTo1pebV3yI', '1IicURjnKv8IRvcB99VmSBUIO7SzDfwSu', '1m9q9iC4y7kAkOHxX7QuXNwNTlcnzX77p']
+    SAVE_FILENAME = ["data/taska/train.csv", "data/taska/val_tweet.csv", "data/taska/val_label.csv", "data/taska/test.csv"]
     COL_NAMES = ['index', 'tweet', 'label']
 
     data_ingest = DataIngestion(FILE_ID, SAVE_FILENAME)
-    data_ingest.download_drive_file_by_id()
-
+    data_ingest.download_drive_file_by_id(flag=True)
+    
     valid_df = data_ingest.merge_valid_label_tweet_by_index(SAVE_FILENAME[1], SAVE_FILENAME[2], COL_NAMES)
-    data_ingest.save_dataframe_to_csv(valid_df, "data/taskc/valid.csv")
+    data_ingest.save_dataframe_to_csv(valid_df, "data/taska/valid.csv")
 
 
 
