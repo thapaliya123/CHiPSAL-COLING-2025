@@ -11,13 +11,12 @@ import torch.nn as nn
 import numpy as np
 
 from model import HFAutoModel
-from sklearn import model_selection, metrics
-from transformers import AdamW
 from transformers import get_linear_schedule_with_warmup
 from metrics.metrics import Metrics
 from utils.wandb_utils import WandbLogger
 from utils.loss_fn_utils import get_loss_function_weights
 from enums import wandb_enums
+from imblearn.under_sampling import RandomUnderSampler
 
 
 
@@ -90,16 +89,15 @@ def get_optimizer_parameters(named_parameters: list):
 def run(cuda_number):
     # seed everything for reproducibility
     seed_everything(config.SEED)
-
+ 
     df_train = pd.read_csv(config.TRAINING_FILE)
-    df_valid = pd.read_csv(config.VALID_FILE)
-
+    df_valid = pd.read_csv(config.VALID_FILE).sample(frac=.5)
+ 
     class_0 = df_train[df_train.label == 0]
     class_1 = df_train[df_train['label'] == 1]
-    
-    class_0 = class_0.sample(n=int(len(class_1) + 100), random_state=config.SEED).sample(frac=.8, random_state=config.SEED)
+   
+    class_0 = class_0.sample(n=int(len(class_1) + 1000), random_state=config.SEED).sample(frac=.8, random_state=config.SEED)
     df_train = pd.concat([class_0, class_1], ignore_index=True).sample(frac=.80, random_state=config.SEED)
-
     # TODO: ADD assert for df_train and df_valid columns
 
     train_dataset = dataset.HFDataset(
