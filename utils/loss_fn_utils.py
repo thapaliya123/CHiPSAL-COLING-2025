@@ -17,50 +17,34 @@ def get_loss_function_weights(y_train, device):
 
     return None
 
-
-class LossFunction:
-    
-    weight = [2.0615, 2.5864, 7.7958]
-    def get_loss_func(loss_func: str):
-        
-        if loss_func == LossFuncEnum.BINARY_CROSSENTROPY.value:
-            return nn.BCELoss()
-    
-        if loss_func == LossFuncEnum.CATEGORICAL_CROSSENTROPY.value:
-            return nn.CrossEntropyLoss()
-        
-        if loss_func == LossFuncEnum.WEIGHTED_CROSSENTROPY.value:
-            return nn.CrossEntropyLoss(weight=LossFunction.weight)
-        
-        if loss_func == LossFuncEnum.FOCAL_CROSSENTROPY.value:
-            return FocalLoss()
-        
-
 class FocalLoss(nn.Module):
-    
-    def __init__(self, gamma=2.0, alpha=None, reduction=None):
-        super(FocalLoss, self).__init__()
-        self.gamma =gamma
-        self.alpha =alpha
-        self.reduction =reduction
-        
-    
-    def get_aggregated_loss(self, loss):
-        if self.reduction == 'mean':
-            return torch.mean(loss)
-        if self.reduction == 'sum':
-            return torch.sum(loss)
-        if self.reduction == 'none':
-            return loss
-        
-    def forward(self, inputs, targets):
-        
-        device = targets.device
-        ce_loss = F.cross_entropy(inputs, targets, reduction='none', weight=torch.tensor(self.alpha, device=device))
+  def __init__(self, gamma=2.0, reduction='mean'):
+    """
+    Args:
+      gamma (float): Focusing parameter that adjusts the rate at which easy examples are down-weighted.
+      alpha (list, optional): Weights for each class. Can be used to tackle class imbalance._
+      reduction (str, optional): Specifies the reduction to apply to the output. Can be 'mean', 'sum', or 'none'.
+    """
+    super(FocalLoss, self).__init__()
+    self.gamma = gamma
+    self.reduction = reduction
 
-        probs = torch.exp(-ce_loss)
-        focal_loss = ((1 - probs) ** self.gamma) * ce_loss
+  def get_aggregated_loss(self, loss):
+    if self.reduction == 'mean':
+      return torch.mean(loss)
+    elif self.reduction == 'sum':
+      return torch.sum(loss)
+    elif self.reduction == 'none':
+      return loss
 
-        return self.get_aggregated_loss(focal_loss)
-        
-        
+  def forward(self, inputs, targets, alpha=None):
+    # Calculate cross-entropy loss
+    ce_loss = F.cross_entropy(inputs, targets, reduction='none', weight=alpha)
+
+    # Get probabilites from Crossentropy Loss
+    probs = torch.exp(-ce_loss)
+
+    # Compute Focal Loss
+    focal_loss = ((1 - probs) ** self.gamma) * ce_loss
+    # breakpoint()
+    return self.get_aggregated_loss(focal_loss)

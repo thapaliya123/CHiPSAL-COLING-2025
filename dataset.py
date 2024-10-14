@@ -59,16 +59,20 @@ if __name__ == "__main__":
     tweet = valid_df.tweet.values
     label = valid_df.label.values
     
-    dataset = HFDataset(tweet=tweet, label=label)
-
+    # dataset = HFDataset(tweet=tweet, label=label)
+    dataset = HFDataset(tweet=["@cmprachanda, @ncp_madhavnepal , @SherBDeuba , @NepaliCongress नेपाली औँसी  :new_moon_face:"], label=[0])
+    # 100 = '[UNK]'
+    special_tokens = dataset.tokenizer.special_tokens_map
+    special_token_ids = {token: dataset.tokenizer.convert_tokens_to_ids(token) for token in special_tokens.values()}
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=8, num_workers=4
     )
 
-    # for item in data_loader:
-    #     breakpoint()
+    for item in data_loader:
+        breakpoint()
     print(len(dataset))
-    print(dataset[0])
+    print(item)
+    # print(dataset[0])
 
 
     

@@ -48,10 +48,37 @@ zip submission.zip submission.json
 
 ## Generate Prediction
 ```
-## Command
+##1. Command (Without Ensemble Learning)
 python3 predict.py --model-path <model-path-here> --test-data-path <test-path-here> --submission-file-path <submission-csv-file-path>
 
-## Example
+### Example
 python3 predict.py --model-path ./models/muril-base-cased-f1_score-0.6789460853867482.bin --test-data-path ./data/taskc/test.csv --submission-file-path ./submissions/submission.json
+
+##2. Command (With Ensemble Learning)
+python3 predict.py --model-path <should-be-model-directory>  --test-data-path ./data/taskc/test.csv  --submission-file-path ./submissions/test.json --ensemble soft_vote
+
+### Example
+python3 predict.py --model-path ./models/ensemble_models --test-data-path ./data/taskc/test.csv  --submission-file-path ./submissions/test.json --ensemble soft_vote
 ```
 
+## Ensemble Learning
+- **Soft Voting:**
+```
+python3 ensemble.py --model-dir <models-dir>   --soft-vote
+
+Example:
+python3 ensemble.py --model-dir ./models/ensemble_models   --soft-vote
+```
+
+- **Hard Voting:**
+```
+python3 ensemble.py --model-dir <models-dir>
+
+Example: 
+python3 ensemble.py --model-dir ./models/ensemble_models 
+```
+
+## Generate Prediction
+```
+python3 stacking_classifier.py --seed 42 --gpu-number 0 --best-model-dir ./models/ensemble_models --train-data-csv ./data/taskc/train_decode_emoji.csv --valid-data-csv ./data/taskc/valid_decode_emoji.csv
+```

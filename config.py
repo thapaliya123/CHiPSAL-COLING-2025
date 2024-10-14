@@ -2,7 +2,7 @@ from enums import metric_enums, loss_enums
 from transformers import AutoTokenizer
 
 # Hyperparameters
-SEED = 22
+SEED = 32
 DEVICE = "cuda"
 MAX_LEN = 300
 TRAIN_BATCH_SIZE = 8
@@ -18,8 +18,9 @@ HF_MODEL_PATH = "google/muril-large-cased"
 MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
 # file path
-TRAINING_FILE = "data/taskc/train.csv"
-VALID_FILE = "data/taskc/valid.csv"
+# TRAINING_FILE = "data/taskc/train.csv"
+TRAINING_FILE = "data/taskc/train_decode_emoji.csv"
+VALID_FILE = "data/taskc/valid_decode_emoji.csv"
 
 # tokenizer
 TOKENIZER = AutoTokenizer.from_pretrained(HF_MODEL_PATH)
