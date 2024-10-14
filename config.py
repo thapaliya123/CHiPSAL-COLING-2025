@@ -9,7 +9,7 @@ TRAIN_BATCH_SIZE = 8
 VALID_BATCH_SIZE = 8
 EPOCHS = 10
 LEARNING_RATE= 2e-5
-NUM_LABELS = 3
+NUM_LABELS = 5
 METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
 
 # models
