@@ -156,7 +156,7 @@ def run(cuda_number):
         if metric_result > best_metric_result:
             print(f"\nBest Metric: {metric_result}")
             print("### SAVING MODEL ###")
-            best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{config.LOSS_FUNCTION}-{metric_result}.bin"
+            best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{config.LOSS_FUNCTION}-misclassifycorrected-{round(metric_result,6)}.bin"
             # best_model_path = "best_model_reproduce.bin"
             
             torch.save(model.state_dict(), best_model_path)
