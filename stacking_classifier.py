@@ -96,25 +96,29 @@ def concat_prediction_get_meta_classifier_inputs(BEST_MODEL_DIR,
     valid_targets = None
 
     for model_file_name in os.listdir(BEST_MODEL_DIR):
-        model = HFAutoModel()
-        model_path = BEST_MODEL_DIR + f"/{model_file_name}"
-        model = load_model_weights(model_path, model)
-        model.to(device)
-        
-        outputs: List[List[float]]
-        targets: List[float]
-        valid_loss: float
-        train_outputs, train_targets, train_loss = engine.eval_fn(train_data_loader, model, device)
-        valid_outputs, valid_targets, valid_loss = engine.eval_fn(valid_data_loader, model, device)
-        test_outputs = get_predictions(test_data_loader, model, device)
-        train_outputs_all_models.append(train_outputs)
-        valid_outputs_all_models.append(valid_outputs)
-        test_outputs_all_models.append(test_outputs)
-        
-        print("\n### METRICS")
-        print(f"Model Name: {model_file_name}")
-        print(f"Train Loss: {train_loss}")
-        print(f"Valid Loss: {valid_loss}")
+        try:
+            model = HFAutoModel()
+            model_path = BEST_MODEL_DIR + f"/{model_file_name}"
+            model = load_model_weights(model_path, model)
+            model.to(device)
+            
+            outputs: List[List[float]]
+            targets: List[float]
+            valid_loss: float
+            train_outputs, train_targets, train_loss = engine.eval_fn(train_data_loader, model, device)
+            valid_outputs, valid_targets, valid_loss = engine.eval_fn(valid_data_loader, model, device)
+            test_outputs = get_predictions(test_data_loader, model, device)
+            train_outputs_all_models.append(train_outputs)
+            valid_outputs_all_models.append(valid_outputs)
+            test_outputs_all_models.append(test_outputs)
+            
+            print("\n### METRICS")
+            print(f"Model Name: {model_file_name}")
+            print(f"Train Loss: {train_loss}")
+            print(f"Valid Loss: {valid_loss}")
+        except:
+            print(f"Exception occured for model: {model_file_name}")
+            continue
     
     X_train_meta, y_train_meta, X_valid_meta, y_valid_meta, X_test_meta = get_meta_classifier_inputs(train_outputs_all_models,
                                                                                                     valid_outputs_all_models,

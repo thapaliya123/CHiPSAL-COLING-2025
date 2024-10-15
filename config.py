@@ -2,12 +2,12 @@ from enums import metric_enums, loss_enums
 from transformers import AutoTokenizer
 
 # Hyperparameters
-SEED = 32
+SEED = 42
 DEVICE = "cuda"
 MAX_LEN = 300
 TRAIN_BATCH_SIZE = 8
 VALID_BATCH_SIZE = 8
-EPOCHS = 10
+EPOCHS = 50
 LEARNING_RATE= 2e-5
 NUM_LABELS = 3
 METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
@@ -19,14 +19,14 @@ MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
 # file path
 # TRAINING_FILE = "data/taskc/train.csv"
-TRAINING_FILE = "data/taskc/train_decode_emoji.csv"
-VALID_FILE = "data/taskc/valid_decode_emoji.csv"
+TRAINING_FILE = "data/taskc/final_train_with_valid_synthetic_combination_v2.csv"
+VALID_FILE = "data/taskc/valid.csv"
 
 # tokenizer
 TOKENIZER = AutoTokenizer.from_pretrained(HF_MODEL_PATH)
 
 # For Reproducibility and data preprocessing and augmentation
-LOSS_FUNCTION = loss_enums.LossFuncEnum.WEIGHTED_CROSSENTROPY.value
+LOSS_FUNCTION = loss_enums.LossFuncEnum.CATEGORICAL_CROSSENTROPY.value
 DATA_AUGMENTATION = False 
 PREPROCESSING = False
 

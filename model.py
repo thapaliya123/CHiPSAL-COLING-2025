@@ -7,15 +7,15 @@ class HFAutoModel(nn.Module):
         super(HFAutoModel, self).__init__()
         self.automodel = AutoModelForSequenceClassification.from_pretrained(config.HF_MODEL_PATH,
                                                                             num_labels=config.NUM_LABELS)
-        # self.freeze_layers() 
+        self.freeze_layers() 
 
-    # def freeze_layers(self):
-    #     for param in self.automodel.bert.encoder.layer[:10].parameters():
-    #         param.requires_grad = False
+    def freeze_layers(self):
+        for param in self.automodel.bert.encoder.layer[:20].parameters():
+            param.requires_grad = False
 
-    # def print_trainable_layers(self):
-    #     for name, param in self.automodel.named_parameters():
-    #         print(f"{name}: {param.requires_grad}")
+    def print_trainable_layers(self):
+        for name, param in self.automodel.named_parameters():
+            print(f"{name}: {param.requires_grad}")
         
     def forward(self, ids, mask, token_type_ids):
         # print(ids.shape)

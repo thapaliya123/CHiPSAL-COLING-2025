@@ -91,8 +91,12 @@ def run(cuda_number):
     # seed everything for reproducibility
     seed_everything(config.SEED)
 
-    df_train = pd.read_csv(config.TRAINING_FILE)
+    df_train = pd.read_csv(config.TRAINING_FILE).drop('index', axis=1)
     df_valid = pd.read_csv(config.VALID_FILE)
+    
+    df_train = df_train.sample(frac=1, random_state=config.SEED).reset_index(drop=True)
+    df_valid = df_valid.sample(frac=1, random_state=config.SEED).reset_index(drop=True)
+    # df = pd.concat([df_train, df_valid])
 
     # TODO: ADD assert for df_train and df_valid columns
 
@@ -110,11 +114,11 @@ def run(cuda_number):
     print(f"### Valid Data Size: {len(valid_dataset)} Rows\n")
 
     train_data_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=config.TRAIN_BATCH_SIZE, num_workers=4
+        train_dataset, batch_size=config.TRAIN_BATCH_SIZE, num_workers=4, shuffle=True
     )
 
     valid_data_loader = torch.utils.data.DataLoader(
-        valid_dataset, batch_size=config.VALID_BATCH_SIZE, num_workers=1
+        valid_dataset, batch_size=config.VALID_BATCH_SIZE, num_workers=1, shuffle=True
     )
     
     device = get_device(cuda_number)
@@ -153,6 +157,8 @@ def run(cuda_number):
             print(f"\nBest Metric: {metric_result}")
             print("### SAVING MODEL ###")
             best_model_path = config.MODEL_PATH+f"-{config.TASK_NAME}-{config.METRIC_NAME}-{config.LOSS_FUNCTION}-{metric_result}.bin"
+            # best_model_path = "best_model_reproduce.bin"
+            
             torch.save(model.state_dict(), best_model_path)
             best_metric_result = metric_result
 
