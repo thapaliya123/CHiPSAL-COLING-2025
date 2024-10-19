@@ -20,7 +20,7 @@ from accelerate import Accelerator
 # Login using your Hugging Face token
 login(token="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")
 
-HF_MODEL_PUSH_NAME = "accelerate"
+HF_MODEL_PUSH_NAME = "using-accelerate"
 CHECKPOINT_PATH = "latest_checkpoint/checkpoint-76000"
 GROUPED_DATA_REPO_ID = "Anish/twitter-devnagari-grouped"
 GPU_NUMBER = 4
