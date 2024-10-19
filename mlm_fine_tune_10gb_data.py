@@ -1,3 +1,4 @@
+import os
 import io
 import math
 import requests
@@ -13,22 +14,26 @@ from transformers import (
 )
 from transformers import default_data_collator
 from datasets import load_dataset, Dataset, concatenate_datasets
-from accelerate import Accelerator
 from huggingface_hub import login
 
 # Login using your Hugging Face token
 login(token="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")
 
 HF_MODEL_PUSH_NAME = "test-full-finetuned-tweet-1crore-muril-large"
+CHECKPOINT_PATH = "latest_checkpoint/checkpoint-76000"
+GROUPED_DATA_REPO_ID = "Anish/twitter-devnagari-grouped"
+GPU_NUMBER = 4
 
 tokenizer = None
-chunk_size = 256
+chunk_size = 128
 wwm_probability = 0.2
 dataset_name = "Anish/tweet-copus"  
-model_name = "google/muril-large-cased"  
+model_name = "Anish/muril-large-cased-test-full-finetuned-tweet-1crore-muril-large"  
 output_dir = "./muril-base-mlm-output"  
 num_train_epochs = 5
-batch_size = 128 
+batch_size = 64 
+
+os.environ["CUDA_VISIBLE_DEVICES"] = f"{GPU_NUMBER}"
 
 # def load_huggingface_data(repo_id):
 #     dataset = load_dataset(repo_id)
@@ -64,6 +69,9 @@ def load_combined_huggingface_data():
   combined_dataset = concatenate_datasets([dataset1, dataset2, dataset3])
   return combined_dataset
 
+def load_grouped_tokenized_data():
+    dataset = load_dataset(GROUPED_DATA_REPO_ID)
+    return dataset
 
 def load_huggingface_data():
     url = "https://huggingface.co/datasets/Anish/merged_tweets_corpus_4145473_samples_hindi_plus_nepali.csv/resolve/main/merged_tweets_corpus_4145473_samples_hindi_plus_nepali.csv"
@@ -159,18 +167,17 @@ def whole_word_masking_data_collator(features):
 def fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_size):
     # dataset = load_huggingface_data(dataset_name)
     # dataset = load_huggingface_data()
-    dataset = load_combined_huggingface_data()
+    # dataset = load_combined_huggingface_data()
     model = get_pretrained_model(model_name)
     initialized_pretrained_tokenizer(model_name)
-    tokenized_datasets = get_tokenized_datasets(dataset)
-    lm_datasets = tokenized_datasets.map(group_texts, batched=True, batch_size=10000, num_proc=190)
+    # tokenized_datasets = get_tokenized_datasets(dataset)
+    # lm_datasets = tokenized_datasets.map(group_texts, batched=True, batch_size=10000, num_proc=190)
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-    test_size = int(0.04 * len(lm_datasets))
-    train_size = len(lm_datasets)-test_size
-    
-    downsampled_dataset = lm_datasets.train_test_split(train_size=train_size, test_size=test_size, seed=42)
-
+    # test_size = int(0.02 * len(lm_datasets))
+    # train_size = len(lm_datasets)-test_size
+    # downsampled_dataset = lm_datasets.train_test_split(train_size=train_size, test_size=test_size, seed=42)
+    downsampled_dataset = load_grouped_tokenized_data()
     logging_steps = len(downsampled_dataset["train"]) // batch_size
     model_name = model_name.split("/")[-1]
 
@@ -185,6 +192,10 @@ def fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_
     per_device_eval_batch_size=batch_size,
     push_to_hub=True,
     logging_steps=logging_steps,
+    save_total_limit=2, # keeps the latest and best model
+    load_best_model_at_end=True, # Loads the best model at the end and push to the hub
+    metric_for_best_model="eval_loss",
+    greater_is_better=False
     )
 
     trainer = Trainer(
@@ -204,7 +215,10 @@ def fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_
             param.data = param.data.contiguous()
 
 
-    trainer.train()
+    if CHECKPOINT_PATH:
+        trainer.train(CHECKPOINT_PATH)
+    else:
+        trainer.train()
 
     eval_results = trainer.evaluate()
     print(f">>> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
