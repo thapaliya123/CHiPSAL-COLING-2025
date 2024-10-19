@@ -184,7 +184,8 @@ def fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_
     training_args = TrainingArguments(
     output_dir=f"{model_name}-{HF_MODEL_PUSH_NAME}",
     overwrite_output_dir=True,
-    evaluation_strategy="epoch",
+    evaluation_strategy="steps",
+    eval_steps=500,
     num_train_epochs=num_train_epochs,
     learning_rate=2e-5,
     weight_decay=0.01,
