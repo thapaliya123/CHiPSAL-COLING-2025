@@ -21,7 +21,7 @@ from accelerate import Accelerator
 login(token="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")
 
 HF_MODEL_PUSH_NAME = "using-accelerate"
-CHECKPOINT_PATH = "latest_checkpoint/checkpoint-76000"
+CHECKPOINT_PATH = None
 GROUPED_DATA_REPO_ID = "Anish/twitter-devnagari-grouped"
 GPU_NUMBER = 4
 
@@ -29,9 +29,9 @@ tokenizer = None
 chunk_size = 128
 wwm_probability = 0.2
 dataset_name = "Anish/tweet-copus"  
-model_name = "Anish/muril-large-cased-test-full-finetuned-tweet-1crore-muril-large"  
+model_name = "muril-base-cased"  
 output_dir = "./muril-base-mlm-output"  
-num_train_epochs = 5
+num_train_epochs = 4
 batch_size = 64 
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = f"{GPU_NUMBER}"
