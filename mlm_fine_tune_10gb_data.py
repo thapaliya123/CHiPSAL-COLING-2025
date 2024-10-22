@@ -19,18 +19,19 @@ from huggingface_hub import login
 # Login using your Hugging Face token
 login(token="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")
 
-HF_MODEL_PUSH_NAME = "test-full-finetuned-tweet-1crore-muril-large"
-CHECKPOINT_PATH = "latest_checkpoint/checkpoint-76000"
+HF_MODEL_PUSH_NAME = "tweet-devnagri-grouped"
+# CHECKPOINT_PATH = "latest_checkpoint/checkpoint-76000"
+CHECKPOINT_PATH = None
 GROUPED_DATA_REPO_ID = "Anish/twitter-devnagari-grouped"
-GPU_NUMBER = 4
+GPU_NUMBER = 6
 
 tokenizer = None
 chunk_size = 128
 wwm_probability = 0.2
 dataset_name = "Anish/tweet-copus"  
-model_name = "Anish/muril-large-cased-test-full-finetuned-tweet-1crore-muril-large"  
+model_name = "google/muril-large-cased"  
 output_dir = "./muril-base-mlm-output"  
-num_train_epochs = 5
+num_train_epochs = 3
 batch_size = 64 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = f"{GPU_NUMBER}"
@@ -185,7 +186,8 @@ def fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_
     output_dir=f"{model_name}-{HF_MODEL_PUSH_NAME}",
     overwrite_output_dir=True,
     evaluation_strategy="steps",
-    eval_steps=500,
+    eval_steps=5000,
+    save_steps=5000,
     num_train_epochs=num_train_epochs,
     learning_rate=2e-5,
     weight_decay=0.01,
@@ -208,8 +210,8 @@ def fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_
     tokenizer=tokenizer,
     )
 
-    eval_results = trainer.evaluate()
-    print(f">>> Before Trainig --> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
+    # eval_results = trainer.evaluate()
+    # print(f">>> Before Trainig --> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
     
     for name, param in model.named_parameters():
         if not param.data.is_contiguous():

@@ -4,97 +4,48 @@ import math
 import requests
 import collections
 import numpy as np
+import torch
 import pandas as pd
+from tqdm.auto import tqdm
 from transformers import (
     AutoTokenizer,
     AutoModelForMaskedLM,
-    DataCollatorForLanguageModeling,
-    Trainer,
-    TrainingArguments,
+    DataCollatorForLanguageModeling
 )
-from transformers import default_data_collator
+from transformers import default_data_collator, get_scheduler
 from datasets import load_dataset, Dataset, concatenate_datasets
 from huggingface_hub import login
 from accelerate import Accelerator
+from torch.utils.data import DataLoader
+from transformers import default_data_collator
+from torch.optim import AdamW
+from huggingface_hub import get_full_repo_name, Repository
+
 
 # Login using your Hugging Face token
 login(token="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")
 
-HF_MODEL_PUSH_NAME = "using-accelerate"
+HF_MODEL_PUSH_NAME = "muril-base-cased-tweet-grouped-accelerate-epoch-6"
 CHECKPOINT_PATH = None
 GROUPED_DATA_REPO_ID = "Anish/twitter-devnagari-grouped"
-GPU_NUMBER = 4
+# GPU_NUMBER = 1
 
 tokenizer = None
 chunk_size = 128
 wwm_probability = 0.2
-dataset_name = "Anish/tweet-copus"  
-model_name = "muril-base-cased"  
+model_name = "google/muril-base-cased"  
 output_dir = "./muril-base-mlm-output"  
-num_train_epochs = 4
-batch_size = 64 
+num_train_epochs = 6
+batch_size = 128
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = f"{GPU_NUMBER}"
 
 accelerator = Accelerator()
-# def load_huggingface_data(repo_id):
-#     dataset = load_dataset(repo_id)
-#     return dataset['train']
-
-def load_huggingface_data_using_request():
-    url = "https://huggingface.co/datasets/Anish/merged_tweets_corpus_4145473_samples_hindi_plus_nepali.csv/resolve/main/merged_tweets_corpus_4145473_samples_hindi_plus_nepali.csv"
-    response = requests.get(url, stream=True)
-    response.encoding = 'utf-8'
-
-    # Create an empty list to store the chunks
-    all_chunks = []
-
-    # Open the response content with universal newline mode ('U' or 'rU')
-    with io.StringIO(response.text, newline='') as csv_file:
-        # Read the CSV data using an iterator with a chunk size
-        chunksize = 10000  # Adjust chunksize as needed
-        for chunk in pd.read_csv(csv_file, chunksize=chunksize, engine='python'):
-            # Append each chunk to the list
-            all_chunks.append(chunk)
-
-    # Concatenate all chunks into a single DataFrame
-    df = pd.concat(all_chunks, ignore_index=True)
-    
-    return Dataset.from_pandas(df)
-
-def load_combined_huggingface_data():
-  dataset1 = load_dataset("sumanpaudel1997/hindi_tweet_sampled_dataset", split="train")
-  dataset2 = load_dataset("sumanpaudel1997/tweet_data_5gb", split="train")
-  dataset2 = dataset2.select_columns(["text"])
-  dataset3 = load_huggingface_data_using_request()
-  
-  combined_dataset = concatenate_datasets([dataset1, dataset2, dataset3])
-  return combined_dataset
 
 def load_grouped_tokenized_data():
     dataset = load_dataset(GROUPED_DATA_REPO_ID)
     return dataset
 
-def load_huggingface_data():
-    url = "https://huggingface.co/datasets/Anish/merged_tweets_corpus_4145473_samples_hindi_plus_nepali.csv/resolve/main/merged_tweets_corpus_4145473_samples_hindi_plus_nepali.csv"
-    response = requests.get(url, stream=True)
-    response.encoding = 'utf-8'
-
-    # Create an empty list to store the chunks
-    all_chunks = []
-
-    # Open the response content with universal newline mode ('U' or 'rU')
-    with io.StringIO(response.text, newline='') as csv_file:
-        # Read the CSV data using an iterator with a chunk size
-        chunksize = 10000  # Adjust chunksize as needed
-        for chunk in pd.read_csv(csv_file, chunksize=chunksize, engine='python'):
-            # Append each chunk to the list
-            all_chunks.append(chunk)
-
-    # Concatenate all chunks into a single DataFrame
-    df = pd.concat(all_chunks, ignore_index=True)
-    
-    return Dataset.from_pandas(df)
 
 def get_pretrained_model(model_checkpoint):
     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
@@ -104,37 +55,6 @@ def initialized_pretrained_tokenizer(model_checkpoint):
     global tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
-def tokenize_function(examples):
-    valid_texts = [text for text in examples["text"] if isinstance(text, str) and text]
-    result = tokenizer(valid_texts) 
-    if tokenizer.is_fast:
-        result["word_ids"] = [result.word_ids(i) for i in range(len(result["input_ids"]))]
-    return result
-
-def get_tokenized_datasets(dataset):
-    tokenized_datasets = dataset.map(
-    # tokenize_function, batched=True, remove_columns=["text",  "__index_level_0__"]
-    tokenize_function, batched=True, remove_columns=["text"]
-    )   
-
-    return tokenized_datasets
-
-
-def group_texts(examples):
-    # Concatenate all texts
-    concatenated_examples = {k: sum(examples[k], []) for k in examples.keys()}
-    # Compute length of concatenated texts
-    total_length = len(concatenated_examples[list(examples.keys())[0]])
-    # We drop the last chunk if it's smaller than chunk_size
-    total_length = (total_length // chunk_size) * chunk_size
-    # Split by chunks of max_len
-    result = {
-        k: [t[i : i + chunk_size] for i in range(0, total_length, chunk_size)]
-        for k, t in concatenated_examples.items()
-    }
-    # Create a new labels column
-    result["labels"] = result["input_ids"].copy()
-    return result
 
 def whole_word_masking_data_collator(features):
     for feature in features:
@@ -166,73 +86,149 @@ def whole_word_masking_data_collator(features):
     return default_data_collator(features)
 
 
-def fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_size):
-    # dataset = load_huggingface_data(dataset_name)
-    # dataset = load_huggingface_data()
-    # dataset = load_combined_huggingface_data()
+def insert_random_mask(batch):
+    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
+    features = [dict(zip(batch, t)) for t in zip(*batch.values())]
+    masked_inputs = data_collator(features)
+    # Create a new "masked" column for each column in the dataset
+    return {"masked_" + k: v.numpy() for k, v in masked_inputs.items()}
+
+
+
+def train_using_acelerate():
+    pass
+
+
+def initialize_repository(output_dir, repo_name):
+    # Check if the output directory already exists
+    if os.path.exists(output_dir):
+        print(f"{output_dir} already exists. Attempting to pull the latest changes.")
+        repo = Repository(output_dir)
+        try:
+            repo.git_pull()  # Pull the latest changes
+        except Exception as e:
+            print(f"Failed to pull changes: {e}. Re-cloning the repository.")
+            # If pull fails, delete the directory and re-clone
+            import shutil
+            shutil.rmtree(output_dir)
+            repo = Repository(output_dir, clone_from=repo_name)
+    else:
+        # If the directory does not exist, clone the repository
+        repo = Repository(output_dir, clone_from=repo_name)
+    
+    return repo
+
+
+def fine_tune_mlm(model_name, num_train_epochs, batch_size):
     model = get_pretrained_model(model_name)
     initialized_pretrained_tokenizer(model_name)
-    # tokenized_datasets = get_tokenized_datasets(dataset)
-    # lm_datasets = tokenized_datasets.map(group_texts, batched=True, batch_size=10000, num_proc=190)
+    
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-    # test_size = int(0.02 * len(lm_datasets))
-    # train_size = len(lm_datasets)-test_size
-    # downsampled_dataset = lm_datasets.train_test_split(train_size=train_size, test_size=test_size, seed=42)
     downsampled_dataset = load_grouped_tokenized_data()
-    train_dataset = downsampled_dataset["train"]
-    test_dataset = downsampled_dataset["test"]
-    logging_steps = len(train_dataset) // batch_size
-    model_name = model_name.split("/")[-1]
-
-    model, train_dataset, test_dataset = accelerator.prepare(model, train_dataset, test_dataset)
-
-    training_args = TrainingArguments(
-    output_dir=f"{model_name}-{HF_MODEL_PUSH_NAME}",
-    overwrite_output_dir=True,
-    evaluation_strategy="steps",
-    eval_steps=500,
-    num_train_epochs=num_train_epochs,
-    learning_rate=2e-5,
-    weight_decay=0.01,
-    per_device_train_batch_size=batch_size,
-    per_device_eval_batch_size=batch_size,
-    push_to_hub=True,
-    logging_steps=logging_steps,
-    save_total_limit=2, # keeps the latest and best model
-    load_best_model_at_end=True, # Loads the best model at the end and push to the hub
-    metric_for_best_model="eval_loss",
-    greater_is_better=False
+    downsampled_dataset = downsampled_dataset.remove_columns(["word_ids"])
+    # eval_dataset = downsampled_dataset["test"].map(
+    #                                                 insert_random_mask,
+    #                                                 batched=True,
+    #                                                 remove_columns=downsampled_dataset["test"].column_names,
+    #                                             )
+    # eval_dataset = eval_dataset.rename_columns(
+    #         {
+    #             "masked_input_ids": "input_ids",
+    #             "masked_attention_mask": "attention_mask",
+    #             "masked_labels": "labels",
+    #         }
+    #     )
+    eval_dataset = downsampled_dataset["test"]
+    train_dataloader = DataLoader(
+        downsampled_dataset["train"],
+        shuffle=True,
+        batch_size=batch_size,
+        collate_fn=data_collator,
+    )
+    # eval_dataloader = DataLoader(
+    #     eval_dataset, batch_size=batch_size, collate_fn=default_data_collator
+    # )
+    eval_dataloader = DataLoader(
+        downsampled_dataset["test"], batch_size=batch_size, collate_fn=data_collator
     )
 
-    trainer = Trainer(
-    model=model,
-    args=training_args,
-    train_dataset=train_dataset,
-    eval_dataset=test_dataset,
-    data_collator=data_collator,
-    tokenizer=tokenizer,
-    )
 
-    eval_results = trainer.evaluate()
-    print(f">>> Before Trainig --> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
+    optimizer = AdamW(model.parameters(),lr=2e-5)
+    model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
+                                                                    model, optimizer, train_dataloader, eval_dataloader
+                                                                    )
     
-    for name, param in model.named_parameters():
-        if not param.data.is_contiguous():
-            param.data = param.data.contiguous()
+    
+    num_update_steps_per_epoch = len(train_dataloader)
+    num_training_steps = num_train_epochs * num_update_steps_per_epoch
 
+    lr_scheduler = get_scheduler(
+        "linear",
+        optimizer=optimizer,
+        num_warmup_steps=0,
+        num_training_steps=num_training_steps,
+    )
 
-    if CHECKPOINT_PATH:
-        trainer.train(CHECKPOINT_PATH)
-    else:
-        trainer.train()
+    # repo_name = get_full_repo_name(HF_MODEL_PUSH_NAME)
+    # output_dir = HF_MODEL_PUSH_NAME
+    # # repo = Repository(output_dir, clone_from=repo_name)
+    # if not os.path.exists(output_dir):
+    #     rrepo = Repository(output_dir, clone_from=repo_name, use_auth_token=True)
+    # else:
+    #     repo = Repository(output_dir, use_auth_token=True)
+    #     repo.git_pull()
 
-    eval_results = trainer.evaluate()
-    print(f">>> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
+    # repo_name = get_full_repo_name(HF_MODEL_PUSH_NAME)
+    # output_dir = HF_MODEL_PUSH_NAME
+    # repo = initialize_repository(output_dir, repo_name)
 
-    trainer.push_to_hub()
+    progress_bar = tqdm(range(num_training_steps))
+
+    for epoch in range(num_train_epochs):
+        # Training
+        model.train()
+        for batch in train_dataloader:
+            outputs = model(**batch)
+            loss = outputs.loss
+            accelerator.backward(loss)
+
+            optimizer.step()
+            lr_scheduler.step()
+            optimizer.zero_grad()
+            progress_bar.update(1)
+            
+
+        # Evaluation
+        model.eval()
+        losses = []
+        for step, batch in enumerate(eval_dataloader):
+            with torch.no_grad():
+                outputs = model(**batch)
+
+            loss = outputs.loss
+            losses.append(accelerator.gather(loss.repeat(batch_size)))
+
+        losses = torch.cat(losses)
+        losses = losses[: len(eval_dataset)]
+        try:
+            perplexity = math.exp(torch.mean(losses))
+        except OverflowError:
+            perplexity = float("inf")
+
+        print(f">>> Epoch {epoch}: Perplexity: {perplexity}")
+
+        # Save and upload
+        accelerator.wait_for_everyone()
+        unwrapped_model = accelerator.unwrap_model(model)
+        unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
+        if accelerator.is_main_process:
+            tokenizer.save_pretrained(output_dir)
+            unwrapped_model.push_to_hub(
+                repo_id=f"Anish/{HF_MODEL_PUSH_NAME}", commit_message=f"Training in progress epoch {epoch}", blocking=False
+            )
 
 # Run the fine-tuning process
 if __name__ == "__main__":
     # Fine-tune the model
-    fine_tune_mlm(model_name, dataset_name, output_dir, num_train_epochs, batch_size)
+    fine_tune_mlm(model_name, num_train_epochs, batch_size)
