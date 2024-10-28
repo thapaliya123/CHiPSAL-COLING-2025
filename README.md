@@ -1,6 +1,6 @@
 # CHIPSAL-COLING-2025
 
-Welcome to the CHIPSAL-COLING-2025 project! This repository contains the code and resources for our innovative cooling solutions. 
+Welcome to the CHIPSAL-COLING-2025 project! This repository contains the code and resources for competitions. 
 ## [Codalab Competition](https://codalab.lisn.upsaclay.fr/competitions/20000#results)
 
 ## Branches
