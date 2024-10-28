@@ -139,12 +139,12 @@ models/
 
 wandb/
 
-50lakh samples.csv
-1000 samples neberta data
-1000 samples neberta data.csv
-clean_date_categories.csv
-clean_nepberta_data.zip
-hindi-tweet.zip
-tweet_hindi_288k.csv
-tweet_hindi_288k.jso
-lit-h.json
+# 50lakh samples.csv
+# 1000 samples neberta data
+# 1000 samples neberta data.csv
+# clean_date_categories.csv
+# clean_nepberta_data.zip
+# hindi-tweet.zip
+# tweet_hindi_288k.csv
+# tweet_hindi_288k.jso
+# lit-h.json
