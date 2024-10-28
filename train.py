@@ -16,8 +16,6 @@ from metrics.metrics import Metrics
 from utils.wandb_utils import WandbLogger
 from utils.loss_fn_utils import get_loss_function_weights
 from enums import wandb_enums
-from imblearn.under_sampling import RandomUnderSampler
-
 
 
 WANDB_RUN_NAME = f"{config.HF_MODEL_PATH.split('/')[-1]}+TASK: {config.TASK_NAME} {str(datetime.now())}"
