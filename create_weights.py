@@ -6,7 +6,6 @@ import pandas as pd
 # Assuming you have the labels in a numpy array
   # Your training labels
 
-
 df_train = pd.read_csv(config.TRAINING_FILE)
 df_valid = pd.read_csv(config.VALID_FILE)
 
