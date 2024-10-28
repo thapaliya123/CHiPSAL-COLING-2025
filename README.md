@@ -1,5 +1,4 @@
 ## [Codalab Competition](https://codalab.lisn.upsaclay.fr/competitions/20000#results)
-- 
 
 ### Notes
 - CUDA out of Memory
