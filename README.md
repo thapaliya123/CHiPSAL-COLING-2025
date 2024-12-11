@@ -54,14 +54,14 @@ python3 predict.py --model-path ./models/ensemble_models --test-data-path ./data
 
 # LeaderBoard Results
 > Our team named **MDS Bots** achieved 1st, 3rd, and 6th positions on shared Tasks C, B, and A respectively.
-## Shared Task C
+## [Shared Task C](https://codalab.lisn.upsaclay.fr/competitions/20000#results)
 <img src="assets/1.png" width=500 height=500>
 
-## Shared Task B
+## [Shared Task B](https://codalab.lisn.upsaclay.fr/competitions/20000#results)
 
 <img src="assets/2.png" width=500 height=500>
 
-## Shared Task A
+## [Shared Task A](https://codalab.lisn.upsaclay.fr/competitions/20000#results)
 <img src="assets/3.png" width=500 height=500>
 
 # Important Links  
