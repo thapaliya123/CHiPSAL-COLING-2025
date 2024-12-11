@@ -135,8 +135,6 @@ __queuestorage__
 __azurite_db*__.json
 .python_packages
 
-models/
-
 wandb/
 
 # 50lakh samples.csv

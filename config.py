@@ -14,13 +14,11 @@ METRIC_NAME = metric_enums.MetricsEnum.F1_SCORE.value
 
 # models
 HF_MODEL_PATH = "google/muril-large-cased"
-# HF_MODEL_PATH = "rahular/varta-bert"
 MODEL_PATH = f"./models/{HF_MODEL_PATH.split('/')[-1]}"
 
 # file path
-# TRAINING_FILE = "data/taskc/train.csv"
-TRAINING_FILE = "data/taskc/train_decode_emoji.csv"
-VALID_FILE = "data/taskc/valid_decode_emoji_copy.csv"
+TRAINING_FILE = ""
+VALID_FILE = ""
 
 # tokenizer
 TOKENIZER = AutoTokenizer.from_pretrained(HF_MODEL_PATH)
@@ -34,4 +32,4 @@ PREPROCESSING = False
 LOG_TO_WANDB = False
 TASK_NAME = TRAINING_FILE.split('/')[1]
 TAGS = [HF_MODEL_PATH, TASK_NAME]
-WANDB_PROJECT_NAME = "NLP CHIPSAL COLING 2025"
+WANDB_PROJECT_NAME = "WandB Project Name Here"

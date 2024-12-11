@@ -18,35 +18,14 @@ class HFAutoModel(nn.Module):
             print(f"{name}: {param.requires_grad}")
         
     def forward(self, ids, mask, token_type_ids):
-        # print(ids.shape)
-        # print(mask.shape)
-        # print(token_type_ids.shape)
         output = self.automodel(ids,
                        token_type_ids=token_type_ids,
                        attention_mask=mask)
         
-        # print(f"Model Output: {type(output)} --> {output.logits.shape}")
         return output.logits
         
 
 
 if __name__ == "__main__":
-    # model = HFAutoModel()
-
-    # print(model)
-    pass
-
-    # for param in model.parameters():
-    #     param.requires_grad = False
-
-    # for param in model.automodel.bert.encoder.layer[:10].parameters():
-    #     param.requires_grad = False
-
-    # # for param in model.automodel.bert.parameters():
-    # #     param.requires_grad = False
-
-    # for param in model.automodel.classifier.parameters():
-    #     param.requires_grad = True
-
-    # for name, param in model.named_parameters():
-    #     print(f"{name}: {param.requires_grad}")
+    model = HFAutoModel()
+    print(model)
