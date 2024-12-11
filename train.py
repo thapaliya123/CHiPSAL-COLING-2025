@@ -11,8 +11,6 @@ import torch.nn as nn
 import numpy as np
 
 from model import HFAutoModel
-from sklearn import model_selection, metrics
-from transformers import AdamW
 from transformers import get_linear_schedule_with_warmup
 from metrics.metrics import Metrics
 from utils.wandb_utils import WandbLogger
