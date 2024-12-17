@@ -64,6 +64,12 @@ python3 predict.py --model-path ./models/ensemble_models --test-data-path ./data
 ## [Shared Task A](https://codalab.lisn.upsaclay.fr/competitions/20000#results)
 <img src="assets/3.png" width=500 height=500>
 
+# For Citations
+`Will release later` 
+
+# Status
+## Updating...
+
 # Important Links  
 1. **Shared Task Details**
     - https://codalab.lisn.upsaclay.fr/competitions/20000#learn_the_details
